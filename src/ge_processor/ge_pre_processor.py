@@ -77,7 +77,8 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
    each of the spots using the watershed algorithm.
    '''
    # Once again, remove noise
-   ge_mask = ge_data > (int_scale_factor * cfg.fit_grains.threshold)
+   #ge_mask = ge_data > (int_scale_factor * cfg.fit_grains.threshold)
+   ge_mask = ge_data > (int_scale_factor * cfg.get('pre_processing')['ge_reader_threshold'])
    # Dilate the mask to merge any small spots
    ge_mask = ndimage.binary_dilation(ge_mask, ndimage.generate_binary_structure(3, 3))
    # Label each connected component (spot)
@@ -123,7 +124,8 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
         # Find local maxima
         max_points = peak_local_max(roi, min_distance=(min_peak_separation),
                                     threshold_rel=0.02, exclude_border=False, indices=False)
-        max_points[roi < int_scale_factor*cfg.fit_grains.threshold] = 0
+        #max_points[roi < int_scale_factor*cfg.fit_grains.threshold] = 0
+        max_points[roi < int_scale_factor * cfg.get('pre_processing')['ge_reader_threshold']] = 0
         max_points = np.nonzero(max_points)
         #
         for max_x, max_y, max_z, max_id in zip(max_points[0], max_points[1], max_points[2],
