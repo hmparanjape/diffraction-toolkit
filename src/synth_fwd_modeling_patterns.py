@@ -47,7 +47,8 @@ if __name__ == '__main__':
             logger.info('=== generating synthetic microstructural data ===')
 	    logger.info('=== writing output to %s ===', fwd_model_op_file)
 
-	    generate_cubic_grain_mosaicity(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
+	    generate_mono_grain_mosaicity(nipt=1000, output_file="ms-data-test.csv", material_name='NiTi_mono', mosaicity=0.01, defgrad_spread=0.01)
+	    #generate_cubic_grain_mosaicity(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
             #generate_cubic_grain_ideal(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
             #generate_cubic_grains_random_ideal(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
 

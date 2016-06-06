@@ -138,3 +138,52 @@ def generate_cubic_grain_mosaicity(nipt=1000, output_file="ms-data-test.csv"):
                                         def_grad_random[0][4],
                                         def_grad_random[0][5]))
 
+# Near [1 0 0] monoclinic grain with mosaicity
+def generate_mono_grain_mosaicity(nipt=1000, output_file="ms-data-test.csv", material_name='NiTi_mono', mosaicity=None, defgrad_spread=None):
+    '''
+    Generate a cubic single crystal microstructure dataset.
+    2 mm cube sample. No mosaicity
+    '''
+
+    grid_size = np.floor(nipt**(1./3.))
+    x = np.linspace(-1000, 1000, grid_size)
+    y = np.linspace(-1000, 1000, grid_size)
+    z = np.linspace(-1000, 1000, grid_size)
+    xmesh, ymesh, zmesh = np.meshgrid(x, y, z)
+
+    template = "{0:12.4f},{1:12.4f},{2:12.4f},{3:>12s},{4:12.4f},{5:12.4f},{6:12.4f},{7:12.4f},{8:12.4f},{9:12.4f},{10:12.4f},{11:12.4f},{12:12.4f},{13:12.4f}\n"
+
+    f = open(output_file, 'w+')
+
+    for ii in range(len(x)):
+        for jj in range(len(y)):
+            for kk in range(len(z)):
+                quat_random = np.array([7.35756618e-01,        6.555369510e-01,        1.6961293021e-01,        1.2843576697e-02])
+		if mosaicity is None:
+		    mosaicity = 0.001
+                quat_dev = np.random.rand(1, 4) * mosaicity
+                quat_random[0] = quat_random[0] + quat_dev[0][0]
+                quat_random[1] = quat_random[1] + quat_dev[0][1]
+                quat_random[2] = quat_random[2] + quat_dev[0][2]
+                quat_random[3] = quat_random[3] + quat_dev[0][3]
+                quat_random = quat_random / np.linalg.norm(quat_random)
+
+		if defgrad_spread is None:
+		    defgrad_spread = 0.001
+                def_grad_random = np.random.rand(1, 6)
+                def_grad_random = def_grad_random * defgrad_spread
+
+                f.write(template.format(xmesh[ii, jj, kk],
+                                        ymesh[ii, jj, kk],
+                                        zmesh[ii, jj, kk],
+                                        material_name.strip(),
+                                        quat_random[0],
+                                        quat_random[1],
+                                        quat_random[2],
+                                        quat_random[3],
+                                        (1. + def_grad_random[0][0]),
+                                        (1. + def_grad_random[0][1]),
+                                        (1. + def_grad_random[0][2]),
+                                        def_grad_random[0][3],
+                                        def_grad_random[0][4],
+                                        def_grad_random[0][5]))
