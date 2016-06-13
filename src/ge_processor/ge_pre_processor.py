@@ -66,7 +66,7 @@ def write_ge2(filename, arr, nbytes_header=8192, pixel_type=np.uint16):
     '''
     fid = open(filename, 'wb')
     fid.seek(nbytes_header)
-    fid.write(arr.astype(pixel_type))
+    fid.write(arr.transpose(1, 2).astype(pixel_type))
     fid.close()
 #--
 def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg):
@@ -414,9 +414,9 @@ class GEPreProcessor:
            template_file = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.3f}{4:12.3f}{5:12.3f}{6:12.3f}{7:12.3f}{8:12.3f}{9:12.3f}{10:12.3f}{11:12.3f}{12:12.3f}{13:12.3f}{14:12.3f}{15:12.3f}{16:12.3f}\n"
            for clustered_maxima_info, spot_size, spot_shape, spot_axes in zip(local_maxima_oxyi_clustered, spot_sizes_clustered, spot_shapes_clustered, spot_axes_clustered):
               o, x, y, i = clustered_maxima_info
-              print template.format(o, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
+              print template.format(o + 1, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
 				    spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8])
-	      f.write(template_file.format(o, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
+	      f.write(template_file.format(o + 1, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
 					   spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8]))
 
 	   f.close()
