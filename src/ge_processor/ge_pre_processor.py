@@ -66,7 +66,7 @@ def write_ge2(filename, arr, nbytes_header=8192, pixel_type=np.uint16):
     '''
     fid = open(filename, 'wb')
     fid.seek(nbytes_header)
-    fid.write(arr.transpose(1, 2).astype(pixel_type))
+    fid.write(arr.astype(pixel_type))
     fid.close()
 #--
 def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg):
