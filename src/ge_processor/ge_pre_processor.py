@@ -263,6 +263,8 @@ class GEPreProcessor:
         	write_image('slice.png', np.amax(frame_list, axis=0), vmin=0)
         # Split the frame array into chunks for multiprocessing
         num_cores = cfg.multiprocessing
+        num_cores = np.round(np.min([num_cores, np.round(np.shape(frame_list)[0]/60.)]))
+
         frame_list_split = np.array_split(frame_list, num_cores, axis=0)
         ge_data_ang_red = ()
         omega_start.append(0)
@@ -273,6 +275,8 @@ class GEPreProcessor:
         omega_start.pop()
         omega_start = np.cumsum(omega_start)
         logger.info("Finished reading frames")
+
+        logger.info("Split data for parallel processing at omega = %s", omega_start.tostring())
 
         self.ge_data          = frame_list
         self.int_scale_factor = int_scale_factor
@@ -327,6 +331,8 @@ class GEPreProcessor:
                  local_maxima_oxyi.append([maxima_o + omega_start_i, maxima_x, maxima_y, max_intensity])
                  local_maxima_oxy.append([maxima_o + omega_start_i, maxima_x, maxima_y])
                  spot_sizes.append(spot_size_i)
+                 logger.info("Blob data: %5d %5d %5d %5d", maxima_o, omega_start_i, maxima_x, maxima_y)
+
                  try:
                     spot_shapes.append([spot_eigs_i[0], spot_eigs_i[1], spot_eigs_i[2]])
 		    spot_axes.append(spot_eigv_i)
@@ -414,9 +420,9 @@ class GEPreProcessor:
            template_file = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.3f}{4:12.3f}{5:12.3f}{6:12.3f}{7:12.3f}{8:12.3f}{9:12.3f}{10:12.3f}{11:12.3f}{12:12.3f}{13:12.3f}{14:12.3f}{15:12.3f}{16:12.3f}\n"
            for clustered_maxima_info, spot_size, spot_shape, spot_axes in zip(local_maxima_oxyi_clustered, spot_sizes_clustered, spot_shapes_clustered, spot_axes_clustered):
               o, x, y, i = clustered_maxima_info
-              print template.format(o + 1, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
+              print template.format(o + 1, y, x, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
 				    spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8])
-	      f.write(template_file.format(o + 1, x, y, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
+	      f.write(template_file.format(o + 1, y, x, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
 					   spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8]))
 
 	   f.close()
