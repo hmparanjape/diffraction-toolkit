@@ -194,6 +194,9 @@ class Microstructure:
 
         for x, y, o in calc_xyo:
             #print template.format(x, y, o)
+	    if o < 0.:
+		o = o + 2.0*np.pi
+
 	    f.write(template_file.format(x, y, o))
 
 	f.close()
@@ -227,6 +230,8 @@ class Microstructure:
 	synth_array = np.zeros((o_dim, x_dim, y_dim))
 	# Fill in intensity details at appropriate X, Y, ome positions
 	for x, y, o in calc_xyo:
+            if o < 0.:
+                o = o + 2.0*np.pi
 
 	    if o > omega_start and o < omega_stop:
 	    	x_op = np.round(x)

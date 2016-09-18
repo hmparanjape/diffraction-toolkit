@@ -52,19 +52,32 @@ if __name__ == '__main__':
     for cfg in cfgs:
     	logger.info('=== begin forward-modeling ===')
 
-        fwd_model_mode = cfg.get('forward_modeling')['modeling_mode'].strip()
-	fwd_model_nipt = cfg.get('forward_modeling')['datagen']['number_of_points']
-	fwd_model_op_file = cfg.get('forward_modeling')['datagen']['output_file_name'].strip()
+        try:
+            fwd_model_mode = cfg.get('forward_modeling')['modeling_mode'].strip()
+        except:
+            logger.error('Invalid forward modeling mode. Choices are datagen and fwdmodel')
+
 	# If datagen then generate synthetic microstructure data.
 	# Certain functions are predefined in the microstructure_generation library.
 	# Implement other functions there.
         if fwd_model_mode == "datagen":
+            try:
+	        fwd_model_nipt = cfg.get('forward_modeling')['datagen']['number_of_points']
+            except:
+                logger.error('Invalid value for number of data points to generate for forward modeling input.')
+
+            try:
+	        fwd_model_op_file = cfg.get('forward_modeling')['datagen']['output_file_name'].strip()
+            except:
+                logger.info('Invalid name for text output file. Defaulting to ms-synth.csv')
+                fwd_model_op_file = 'ms-synth.csv'
+
             logger.info('=== generating synthetic microstructural data ===')
 	    logger.info('=== writing output to %s ===', fwd_model_op_file)
 
 	    # Generate a monoclinic single crystal with mosaicity and strain spread.
-	    generate_mono_grain_mosaicity(nipt=1000, output_file="ms-data-test.csv", \
-					  material_name='NiTi_mono', mosaicity=0.01, defgrad_spread=0.01)
+	    generate_mono_grain_mosaicity(nipt=fwd_model_nipt, output_file=fwd_model_op_file, \
+					  material_name='NiTi_mono', mosaicity=0.0001, defgrad_spread=0.0001)
 	    # Generate a cubic single crystal with mosaicity and strain spread.
 	    #generate_cubic_grain_mosaicity(nipt=fwd_model_nipt, output_file=fwd_model_op_file)
 	    # Generate an ideal cubic single crystal - without mosaicity or strain.
@@ -77,11 +90,16 @@ if __name__ == '__main__':
 	    # Get microstructural input file name. See Github documentation for the format of this file.
             try:
                 fwd_model_ip_filename = \
-                    cfg.get('forward_modeling')['input_file_name'].strip()
+                    cfg.get('forward_modeling')['fwdmodel']['input_file_name'].strip()
             except:
-                fwd_model_ip_filename = 'ms-data-test.csv'
+                fwd_model_ip_filename = 'ms-data.csv'
 	    # Get the file name for output data - two-theta, eta, omega for spots.
-            fwd_model_op_filename = cfg.get('forward_modeling')['output_file_name'].strip()
+            try:
+                fwd_model_op_filename = cfg.get('forward_modeling')['fwdmodel']['output_file_name'].strip()
+            except:
+                logger.info('Invalid output text file name. Defaulting to synth-data.out.')
+                fwd_model_op_filename = 'synth-data.out'
+
 	    # Create a Microstructure object. This stores all data related to input and simulated output.
 	    # TODO: Decide if we want to read everything from cfg into Microstructure or from cfg to here.
             ms = Microstructure(cfg, logger, fwd_model_ip_filename)
@@ -91,12 +109,31 @@ if __name__ == '__main__':
             ms.get_diffraction_angles()
 	    # Project the two-theta, eta, omega angles to X, Y using heXRD detector routines.
             ms.project_angs_to_detector(output_file=fwd_model_op_filename)
-	    # Write output to GE2
-	    output_ge2 = cfg.get('forward_modeling')['output_ge_name']
-	    omega_start = cfg.get('forward_modeling')['output_omega']['start']
-            omega_step = cfg.get('forward_modeling')['output_omega']['step']
-            omega_stop = cfg.get('forward_modeling')['output_omega']['stop']
-	    ms.write_xyo_to_ge2(output_ge2=output_ge2, omega_start=omega_start, omega_step=omega_step, omega_stop=omega_stop)
+
+	    try:
+	        output_ge2_flag = cfg.get('forward_modeling')['fwdmodel']['output_ge']
+	    except:
+		output_ge2_flag = False
+
+	    if output_ge2_flag is not False:
+                # Write output to GE2
+                try:
+                    output_ge2 = cfg.get('forward_modeling')['fwdmodel']['output_ge_name']
+                except:
+                    logger.info('Invalid name for output GE2 file. Defaulting to ff_00000.ge2.')
+                    output_ge2 = 'ff_00000.ge2'
+
+                try:
+                    omega_start = cfg.get('forward_modeling')['fwdmodel']['output_omega']['start']
+                    omega_step = cfg.get('forward_modeling')['fwdmodel']['output_omega']['step']
+                    omega_stop = cfg.get('forward_modeling')['fwdmodel']['output_omega']['stop']
+                except:
+                    logger.info('Invalid omega start, stop or end parameters. Defaulting to the range of 0 to 360 degrees with 0.1 degree step size.')
+                    omega_start = 0.0
+                    omega_step = 0.1
+                    omega_stop = 360.0
+
+	        ms.write_xyo_to_ge2(output_ge2=output_ge2, omega_start=omega_start, omega_step=omega_step, omega_stop=omega_stop)
 
         else:
             logger.error('Invalid forward modeling mode: %s. Choices are datagen and fwdmodel', fwd_model_mode)

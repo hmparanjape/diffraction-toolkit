@@ -36,15 +36,15 @@ def generate_cubic_grains_random_ideal(nipt=1000, output_file="ms-data-test.csv"
                 def_grad_random = np.random.rand(1, 6)
                 def_grad_random = def_grad_random / 1000.0
 
-                f.write(template.format(xmesh[ii, jj, kk],
-                                        ymesh[ii, jj, kk],
-                                        zmesh[ii, jj, kk],
-                                        "NiTi_cubic",
-                                        quat_random[0][0],
+                f.write(template.format(xmesh[ii, jj, kk],                   # X coordinate
+                                        ymesh[ii, jj, kk],                   # Y coordinate
+                                        zmesh[ii, jj, kk],                   # Z coordinate
+                                        "NiTi_cubic",                        # Phase name. Must correspond to a material in heXRD material file to be used.
+                                        quat_random[0][0],                   # Orientation in quaternions (4 components)
                                         quat_random[0][1],
                                         quat_random[0][2],
                                         quat_random[0][3],
-                                        (1. + def_grad_random[0][0]),
+                                        (1. + def_grad_random[0][0]),        # Stretch tensor components (6. Three axial and three shear)
                                         (1. + def_grad_random[0][1]),
                                         (1. + def_grad_random[0][2]),
                                         def_grad_random[0][3],
@@ -158,7 +158,7 @@ def generate_mono_grain_mosaicity(nipt=1000, output_file="ms-data-test.csv", mat
     for ii in range(len(x)):
         for jj in range(len(y)):
             for kk in range(len(z)):
-                quat_random = np.array([7.35756618e-01,        6.555369510e-01,        1.6961293021e-01,        1.2843576697e-02])
+                quat_random = np.array([   -0.0041,   -0.8192,   -0.3506,    0.4538])
 		if mosaicity is None:
 		    mosaicity = 0.001
                 quat_dev = np.random.rand(1, 4) * mosaicity
