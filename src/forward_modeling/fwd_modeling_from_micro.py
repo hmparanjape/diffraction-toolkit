@@ -183,21 +183,21 @@ class Microstructure:
 	# Obtain X, Y from two-theta, eta
         calc_xyo = detector.angToXYO(angs[:, 0], angs[:, 1], angs[:, 2])
         calc_xyo = np.transpose(calc_xyo)
-        # Write X, Y, omega sata to a text file
-        template = "{0:12.2f}{1:12.2f}{2:12.2f}"
-        template_file = "{0:12.2f}{1:12.2f}{2:12.2f}\n"
+        # Write X, Y, omega data to a text file
+        template = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.2f}{4:12.2f}"
+        template_file = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.2f}{4:12.2f}\n"
 
         if output_file is not None:
 	    f = open(output_file, 'w+')
 	else:
 	    f = open("synth_data.out", 'w+')
 
-        for x, y, o in calc_xyo:
+        for x, y, o, tt, e, o2 in np.hstack((calc_xyo, angs)):
             #print template.format(x, y, o)
 	    if o < 0.:
 		o = o + 2.0*np.pi
 
-	    f.write(template_file.format(x, y, o))
+	    f.write(template_file.format(x, y, o, e, tt))
 
 	f.close()
         self.calc_xyo = calc_xyo
