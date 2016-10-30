@@ -112,6 +112,9 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
         if(min(bbox) < (min_size ** (1.0/3.0))):
             #print 'Finished one spot but its small'
             continue
+        centroid_tmp = [(slice_x.stop + slice_x.start)/2.0, (slice_y.stop + slice_y.start)/2.0 - 1024.0, (slice_z.stop + slice_z.start)/2.0 - 1024.0]
+        if np.sqrt(np.power(centroid_tmp[1], 2.0) + np.power(centroid_tmp[2], 2.0)) > cfg.get('pre_processing')['radial_threshold']:
+            continue
         #print 'Yay finished one spot'
         #print 'Finished processing a blob with bbox', bbox
         blob_centroids.append([(slice_x.stop + slice_x.start)/2.0, (slice_y.stop + slice_y.start)/2.0, (slice_z.stop + slice_z.start)/2.0])
@@ -349,7 +352,9 @@ class GEPreProcessor:
         # Cluster the local minima
         local_maxima_oxy = np.array(local_maxima_oxy)
         local_maxima_oxyi = np.array(local_maxima_oxyi)
-        db = DBSCAN(eps=2.5, min_samples=1).fit(local_maxima_oxy)
+        # For now, the clustering radius is determined from the mean_peak_separation value
+        eps_val = np.max([cfg.get('pre_processing')['min_peak_separation'], 2.5])
+        db = DBSCAN(eps=eps_val, min_samples=1).fit(local_maxima_oxy)
         local_maxima_labels = db.labels_
         #
         o_sum = np.bincount(local_maxima_labels, weights=local_maxima_oxyi[:, 0])
@@ -437,8 +442,9 @@ class GEPreProcessor:
            grey_dilation_size = (cfg.get('pre_processing')['radius_gray_dilation_omega'],
 				 cfg.get('pre_processing')['radius_gray_dilation_x'],
 				 cfg.get('pre_processing')['radius_gray_dilation_y'])
-           frames_synth = ndimage.morphology.grey_dilation(frames_synth, size=grey_dilation_size)
-           write_ge2(cfg.get('analysis_name') + '_synth_spots.ge2', frames_synth)
+           frames_synth_grey  = ndimage.morphology.grey_dilation(frames_synth, size=grey_dilation_size)
+           frames_synth_gauss = ndimage.filters.gaussian_filter(frames_synth_grey, sigma=grey_dilation_size)
+           write_ge2(cfg.get('analysis_name') + '_synth_spots.ge2', frames_synth_gauss)
         else:
            logger.info("Skipped writing GE2 files")
 

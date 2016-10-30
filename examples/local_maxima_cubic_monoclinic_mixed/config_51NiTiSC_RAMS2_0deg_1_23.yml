@@ -37,8 +37,9 @@ instrument:
 
 pre_processing:
   ge_reader_threshold: 20  # Anything less than this will be set to zero on reading GE2 file
-  min_blob_size: 125       # Blob containing less than these pixels will be discarded
-  min_peak_separation: 5   # Minimum separation between local maxima
+  radial_threshold: 400    # Radial distance from center. The spots outside this distance will not be processed
+  min_blob_size: 45        # Blob containing less than these pixels will be discarded
+  min_peak_separation: 4   # Minimum separation between local maxima
   print_spots_info: true   # Print omega, x, y and intensity for the local maxima found
   print_ge: true           # If true, GE2 files will be written to disk (pretty slow for now)
   print_diag_images: false # Print diagnostic PNGs with local maxima overlaid on intensity etc
