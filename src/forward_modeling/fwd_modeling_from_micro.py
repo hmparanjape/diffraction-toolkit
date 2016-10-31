@@ -9,6 +9,7 @@ import warnings
 import yaml
 # Math/array magic
 import numpy as np
+from scipy import ndimage
 # Parallelization for speed
 from joblib import Parallel, delayed
 import multiprocessing
@@ -253,9 +254,11 @@ class Microstructure:
 		# For now we are not calculating structure factor and realistic intensities for spots.
 		# Can we use heXRD crystallography functions? May be. Need to find a way of getting atom positions.
 		# Read in CIFs? haha fu*k no..
-		synth_array[o_op][x_op][y_op] = 12000
+		synth_array[o_op][x_op][y_op] = 11000
+        # Add a Gauss blur
+        synth_array_blurred = ndimage.filters.gaussian_filter(synth_array, sigma=3)
 	# Write the array to a GE2
-	write_ge2(output_ge2, synth_array)
+	write_ge2(output_ge2, synth_array_blurred)
 	# Also write a max-over frame for now.
 	synth_array_max = np.amax(synth_array, axis=0)
 	output_ge2_max = output_ge2.rsplit('.', 1)[0]

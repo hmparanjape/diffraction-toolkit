@@ -14,7 +14,7 @@ material:
 image_series:
   file:
     stem: /media/beamteam/DIFFRACTION/CHESS/2015/51NiTiSC_RAMS2TC_0Deg_1/23/ff/ff_%05d.ge2 # can include relative or absolute path
-    ids: [1203, 1204, 1205, 1206, 1207, 1208, 1209, 1210, 1211, 1212, 1213, 1214, 1215, 1216, 1217] # or can use globs: ["*2[4-9]"]
+    ids: [1203, 1204, 1205, 1206, 1207] # or can use globs: ["*2[4-9]"]
   images:
     start: 1
     stop: 3600
@@ -37,13 +37,13 @@ instrument:
 
 pre_processing:
   ge_reader_threshold: 20  # Anything less than this will be set to zero on reading GE2 file
-  radial_threshold: 400    # Radial distance from center. The spots outside this distance will not be processed
-  min_blob_size: 45        # Blob containing less than these pixels will be discarded
-  min_peak_separation: 4   # Minimum separation between local maxima
+  radial_threshold: 350    # Radial distance from center. The spots outside this distance will not be processed
+  min_blob_size: 25        # Blob containing less than these pixels will be discarded
+  min_peak_separation: 2   # Minimum separation between local maxima
   print_spots_info: true   # Print omega, x, y and intensity for the local maxima found
   print_ge: true           # If true, GE2 files will be written to disk (pretty slow for now)
   print_diag_images: false # Print diagnostic PNGs with local maxima overlaid on intensity etc
-  radius_gray_dilation_omega: 4  # When writing GE2 files, spot will be dilated by these pixels in omega
-  radius_gray_dilation_x: 4      # When writing GE2 files, spot will be dilated by these pixels in x 
-  radius_gray_dilation_y: 4      # When writing GE2 files, spot will be dilated by these pixels in y
+  radius_gray_dilation_omega: 2  # When writing GE2 files, spot will be dilated by these pixels in omega
+  radius_gray_dilation_x: 2      # When writing GE2 files, spot will be dilated by these pixels in x 
+  radius_gray_dilation_y: 2      # When writing GE2 files, spot will be dilated by these pixels in y
 

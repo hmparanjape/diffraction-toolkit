@@ -126,7 +126,7 @@ def find_blobs_mp(ge_data, int_scale_factor, min_size, min_peak_separation, cfg)
         markers = np.zeros_like(roi)
         # Find local maxima
         max_points = peak_local_max(roi, min_distance=(min_peak_separation),
-                                    threshold_rel=0.02, exclude_border=False, indices=False)
+                                    threshold_rel=0.01, exclude_border=False, indices=False)
         #max_points[roi < int_scale_factor*cfg.fit_grains.threshold] = 0
         max_points[roi < int_scale_factor * cfg.get('pre_processing')['ge_reader_threshold']] = 0
         max_points = np.nonzero(max_points)
@@ -353,7 +353,7 @@ class GEPreProcessor:
         local_maxima_oxy = np.array(local_maxima_oxy)
         local_maxima_oxyi = np.array(local_maxima_oxyi)
         # For now, the clustering radius is determined from the mean_peak_separation value
-        eps_val = np.max([cfg.get('pre_processing')['min_peak_separation'], 2.5])
+        eps_val = np.max([cfg.get('pre_processing')['min_peak_separation'], 2.0])
         db = DBSCAN(eps=eps_val, min_samples=1).fit(local_maxima_oxy)
         local_maxima_labels = db.labels_
         #
@@ -405,6 +405,11 @@ class GEPreProcessor:
         logger.info("Found %d connected components", len(blobs))
         logger.info("Found %d spots", np.shape(local_maxima_oxyi)[0])
 
+        # Before results are returned, an ooportunity to scale the intensities
+        max_vals = np.max(self.local_maxima_oxyi_clustered, axis=0)
+        max_o, max_x, max_y, max_i = max_vals
+        intensity_scale_factor = 12000.0 / max_i
+
 	if cfg.get('pre_processing')['print_diag_images']:
         	logger.info("Writing diagnostic images")
         	# Superimpose the centroids of blobs and the local maxima on the original data 
@@ -425,9 +430,9 @@ class GEPreProcessor:
            template_file = "{0:12.2f}{1:12.2f}{2:12.2f}{3:12.3f}{4:12.3f}{5:12.3f}{6:12.3f}{7:12.3f}{8:12.3f}{9:12.3f}{10:12.3f}{11:12.3f}{12:12.3f}{13:12.3f}{14:12.3f}{15:12.3f}{16:12.3f}\n"
            for clustered_maxima_info, spot_size, spot_shape, spot_axes in zip(local_maxima_oxyi_clustered, spot_sizes_clustered, spot_shapes_clustered, spot_axes_clustered):
               o, x, y, i = clustered_maxima_info
-              print template.format(o + 1, y, x, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
+              print template.format(o + 1, y, x, i * intensity_scale_factor, spot_size, spot_shape[0], spot_shape[1], spot_shape[2], 
 				    spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8])
-	      f.write(template_file.format(o + 1, y, x, i, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
+	      f.write(template_file.format(o + 1, y, x, i * intensity_scale_factor, spot_size, spot_shape[0], spot_shape[1], spot_shape[2],
 					   spot_axes[0], spot_axes[1], spot_axes[2], spot_axes[3], spot_axes[4], spot_axes[5], spot_axes[6], spot_axes[7], spot_axes[8]))
 
 	   f.close()
@@ -437,7 +442,7 @@ class GEPreProcessor:
            # Synthesize a GE2 file based on the IDed spots
            frames_synth = np.zeros(self.input_data_shape)
            for o, x, y, i in local_maxima_oxyi_clustered:
-              frames_synth[int(round(o)), int(round(x)), int(round(y))] = i
+              frames_synth[int(round(o)), int(round(x)), int(round(y))] = i * intensity_scale_factor
 
            grey_dilation_size = (cfg.get('pre_processing')['radius_gray_dilation_omega'],
 				 cfg.get('pre_processing')['radius_gray_dilation_x'],
