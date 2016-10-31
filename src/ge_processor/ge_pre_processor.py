@@ -406,9 +406,10 @@ class GEPreProcessor:
         logger.info("Found %d spots", np.shape(local_maxima_oxyi)[0])
 
         # Before results are returned, an ooportunity to scale the intensities
+        # The factor of 5 is because the uint16 format can store intensities upto 60k and not just 12k.
         max_vals = np.max(self.local_maxima_oxyi_clustered, axis=0)
         max_o, max_x, max_y, max_i = max_vals
-        intensity_scale_factor = 12000.0 / max_i
+        intensity_scale_factor = 12000.0 / max_i * 5.0
 
 	if cfg.get('pre_processing')['print_diag_images']:
         	logger.info("Writing diagnostic images")
@@ -441,8 +442,10 @@ class GEPreProcessor:
            logger.info("Writing GE2 files")
            # Synthesize a GE2 file based on the IDed spots
            frames_synth = np.zeros(self.input_data_shape)
+           intensity_threshold = cfg.get('pre_processing')['upper_intensity_threshold']
            for o, x, y, i in local_maxima_oxyi_clustered:
-              frames_synth[int(round(o)), int(round(x)), int(round(y))] = i * intensity_scale_factor
+              if i < intensity_threshold:
+                  frames_synth[int(round(o)), int(round(x)), int(round(y))] = i * intensity_scale_factor
 
            grey_dilation_size = (cfg.get('pre_processing')['radius_gray_dilation_omega'],
 				 cfg.get('pre_processing')['radius_gray_dilation_x'],

@@ -260,7 +260,7 @@ class Microstructure:
 	# Write the array to a GE2
 	write_ge2(output_ge2, synth_array_blurred)
 	# Also write a max-over frame for now.
-	synth_array_max = np.amax(synth_array, axis=0)
+	synth_array_max = np.amax(synth_array_blurred, axis=0)
 	output_ge2_max = output_ge2.rsplit('.', 1)[0]
 	write_ge2(output_ge2_max + '-max.ge2', synth_array_max)
 
